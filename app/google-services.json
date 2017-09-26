@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "629897626037",
+    "firebase_url": "https://dublinbiker-7e00e.firebaseio.com",
+    "project_id": "dublinbiker-7e00e",
+    "storage_bucket": "dublinbiker-7e00e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629897626037:android:9b1d8ccfb6b0d41a",
+        "android_client_info": {
+          "package_name": "com.cherena.dublinbiker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629897626037-t5k1see31sfhjaia4s0p1k4tdholu0kq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASt83bszc_XM8S-U1Q_T8KQndyuPhMAxY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
