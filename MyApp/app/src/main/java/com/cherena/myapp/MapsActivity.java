@@ -3,6 +3,7 @@ package com.cherena.myapp;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -12,6 +13,15 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.constant.RequestResult;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Leg;
+import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.request.*;
+import com.akexorcist.googledirection.request.DirectionRequest;
+import com.akexorcist.googledirection.util.DirectionConverter;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -24,7 +34,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
@@ -43,7 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     private static final String TAG = MapsActivity.class.getSimpleName();
 
@@ -140,7 +153,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (BikeStation station : object) {
                             LatLng s = new LatLng(station.Position.lat, station.Position.lng);
 //                            String availableB = Integer.toString(station.AvailableBikes);
-                            mMap.addMarker(new MarkerOptions().position(s).title("Available: " + Integer.toString(station.AvailableBikes)));
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(s)
+                                    .title("Available: " + Integer.toString(station.AvailableBikes)));
+                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                                @Override
+                                public boolean onMarkerClick(Marker marker) {
+
+                                 LatLng destination = marker.getPosition();
+                                 LatLng origin =  returnDeviceLocation();
+                                 com.akexorcist.googledirection.request.DirectionRequest dr;
+                                 try{
+                                     dr = new DirectionRequest("AIzaSyCC2T5COdYWmNhYF43BYpD0IZTJtXjQ3lI", origin, destination)
+                                        .transportMode(TransportMode.WALKING);
+                                     dr.execute(new DirectionCallback() {
+                                         @Override
+                                         public void onDirectionSuccess(Direction direction, String rawBody) {
+
+                                             String status = direction.getStatus();
+
+                                             if(status.equals(RequestResult.OK))
+                                                placeDirection(direction);
+
+                                            }
+
+                                            @Override
+                                            public void onDirectionFailure(Throwable t) {
+                                                t.printStackTrace();
+
+                                            }
+                                        });
+
+                                    } catch(SecurityException e)  {
+                                        Log.e("Exception: %s", e.getMessage());
+                                    }
+                                 return false;
+                                }
+                            });
+
                         }
                     }
 
@@ -281,7 +331,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    private LatLng returnDeviceLocation() {
+    /*
+     * Get the best and most recent location of the device, which may be null in rare
+     * cases when a location is not available.
+     */
+        try {
+            if (mLocationPermissionGranted) {
+                Task locationResult = mFusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(this, new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            mLastKnownLocation = (Location) task.getResult();
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(mLastKnownLocation.getLatitude(),
+                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                        } else {
+                            Log.d(TAG, "Current location is null. Using defaults.");
+                            Log.e(TAG, "Exception: %s", task.getException());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+                            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+                    }
+                });
+            }
+        } catch(SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
+        return new LatLng(mLastKnownLocation.getLatitude(),
+                mLastKnownLocation.getLongitude());
+    }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        return false;
+    }
+
+
+    //list to hold polyline as they are created to allow for removal
+    List<Polyline> Polylines = new ArrayList<>();
+
+    public void placeDirection(Direction direction) {
+        // Remove polylines from map
+        for (Polyline polyline : Polylines) {
+            polyline.remove();
+        }
+        // Clear polyline array
+        Polylines.clear();
+        Route route = direction.getRouteList().get(0);
+        Leg leg = route.getLegList().get(0);
+        ArrayList<LatLng> pointList = leg.getDirectionPoint();
+        PolylineOptions polylineOptions = DirectionConverter.createPolyline(getApplicationContext(), pointList, 5, Color.BLUE);
+        Polylines.add(mMap.addPolyline(polylineOptions));
+
+    }
 
 
 }

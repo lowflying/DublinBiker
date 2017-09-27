@@ -3,6 +3,10 @@ package com.cherena.myapp;
 import android.content.Context;
 import android.util.Log;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.RequestResult;
+import com.akexorcist.googledirection.model.Direction;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -11,6 +15,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -97,6 +102,8 @@ public class ApiUtil
 
         requestQueue.add(request);
     }
+
+
 
 //    public void fetchStations(Object param1, final RequestListener<String> listener)
 //    {

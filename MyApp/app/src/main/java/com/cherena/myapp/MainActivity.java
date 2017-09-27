@@ -33,11 +33,11 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        MapFragment mapFrag = new MapFragment();
-        mapFrag.setArguments(getIntent().getExtras());
-
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, mapFrag).commit();
+//        MapFragment mapFrag = new MapFragment();
+//        mapFrag.setArguments(getIntent().getExtras());
+//
+//        getSupportFragmentManager().beginTransaction()
+//                .add(R.id.fragment_container, mapFrag).commit();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
